@@ -16,7 +16,8 @@ public class P1 {
 	public boolean solution(String[] phone_book) {
 		boolean answer = true;
 
-		for (String item : phone_book) {
+		for(int i =0; i< phone_book.length; i++) {
+
 
 		}
 

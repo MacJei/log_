@@ -5,7 +5,7 @@
 [programmers.co.kr](https://programmers.co.kr/learn/challenges)<br>
 책 (Do it - Java/Python)
 
-[자바](#)
+[자바](README_java.md)
 
-[파이썬](#)
+[파이썬](README_python.md)
 

@@ -16,12 +16,17 @@ public class ArrayEqualsCopyRcopy {
      * @param a, b
      */
     public static void copy(int[] a, int[] b){
+    	if( a== null || b== null || a.length != b.length)
+    	    throw new IllegalArgumentException();
+
     }
     /**
      * Copy in reverse order
      * @param a, b
      */
     public static void rcopy(int[] a, int[] b) {
+        if( a== null || b== null || a.length != b.length)
+            throw new IllegalArgumentException();
     }
 
 }

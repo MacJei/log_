@@ -6,5 +6,5 @@
 
 ## 개인 study
 - [자바](java/README_java.md)
-- [파이썬 Crash Course.2E](python/notebook_python.ipynb)
-- [이것이 코딩 테스트다.with.파이썬]()
+- [파이썬 Crash Course.2E](python/crash_course.ipynb)
+- [이것이 코딩 테스트다.with.파이썬](python/coding_test.ipynb)

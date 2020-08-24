@@ -1,11 +1,10 @@
-# 코딩 테스트를 위한 자료구조 & 알고리즘
+# 코딩 테스트 & 자료구조 & 알고리즘
 
-## 자료
+## 코딩테스트 온라인
 [leetcode.com](https://leetcode.com/problemset/all/)<br>
 [programmers.co.kr](https://programmers.co.kr/learn/challenges)<br>
-책 (Do it - Java/Python)
 
-[자바](README_java.md)
-
-[파이썬](README_python.md)
-
+## 개인 study
+[자바](java/README_java.md)
+[파이썬 Crash Course.2E](python/notebook_python.ipynb)
+[이것이 코딩 테스트다.with.파이썬]()

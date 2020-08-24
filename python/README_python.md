@@ -18,6 +18,7 @@
 
 # Getting Started
 ```commandline
+
 # python is pre-installed in Ubuntu; check python versions
 python3
 # compile and execute
@@ -25,12 +26,22 @@ python3 -m py_compile "%f"
 python3 "%f"
 ```
 
+``` sh
+# create virtual environment 'venv'
+python3 -m venv venv
+```
+
 # Variables and Simple Data Types
 ```python
-name = 'ada lovelace'
-print(name.upper())
-print(name.lower())
-print(name.title())
+first_name = "ada"
+last_name = "lovelace"
+full_name = f"{first_name} {last_name}"
+
+print(full_name.upper())
+print(full_name.lower())
+print(full_name.title())
+print(f"Hello, {full_name.title()}!")
+
 
 # White spaces
 greeting = '\tHello\n'
@@ -62,13 +73,38 @@ age = 23
 message = "Happy " + str(age) + "rd Birthday!"
 ```
 
-Integers in python2
+Integers, Floats
 ```python
-# this does not apply in python3
-3/2 # 1
+3 ** 2 # 9
+2 + 3*4 # 14
+0.1 + 0.1 # .2
+0.1 + 0.2 # .30000...004
+5 * 0.1 # .50000...004
+2 * 0.1 # .2
+
+# When you divide any two numbers, even if they are integers that result in a whole number, you’ll always get a float:
+3/2 # 1.5
 3.0/2 # 1.5
 3/2.0 # 1.5
 3.0/2.0 # 1.5
+```
+
+Underscores in Numbers
+```python
+# Make more readable
+universe_age = 14_000_000_000
+# 14000000000
+print(universe_age)
+```
+
+Multiple Assignment
+```python
+x, y, z = 0, 0, 0
+```
+
+Constants
+```python
+MAX_CONNECTIONS = 5000
 ```
 
 Comments
@@ -85,7 +121,7 @@ The Zen of Python
 import this
 ```
 
-# Introducing Lists
+# Lists
 ```python
 bicycles = ['trek', 'cannondale', 'redline', 'specialized']
 print(bicycles) # print entire list
@@ -103,7 +139,7 @@ fruit.append('strawberry') # append at the end
 
 # insert(i, str)
 fruit.insert(0, 'banana') # add at the beginning
-fruit.insert(len(fruit) - 1, 'melon') # add at the end
+fruit.insert(len(fruit), 'melon') # add (append) at the end
 
 # del list[i]
 del fruit[0] # remove first element
@@ -118,35 +154,41 @@ first_owned = motorcycles.pop(0)
 print('The first motorcycle I owned was a ' + first_owned.title() + '.')
 
 # remove(str) remove item (first occurrence) by specifying the value
-motorcycles.remove('honda') # use a loop to remove all occurrences
+motorcycles.remove('honda') # Have to use a loop to remove all occurrences
 
 too_expensive = 'ducati'
 motorcycles.remove(too_expensive)
 print("\nA " + too_expensive.title() + " is too expensive for me.")
 print(motorcycles)
 
-# sort()
+
+# PERMANENT SORT
+# list.sort()
 cars = ['bmw', 'audi', 'toyota', 'subaru']
 cars.sort()
+print(cars)  # audi bmw subaru toyota
 
 # sort(reverse = True)
 cars.sort(reverse = True) # sort and reverse
 
-# sorted(list) for sorting temporarily
+# TEMPORARY SORT
+# sorted(list)
 print('Sorted List: ')
 print(sorted(cars))
 print('Original List: ')
-print(cars)
+print(cars) # original list
 
 # sorted(list, reverse = True)
 location = ['tokyo', 'los angeles', 'new york', 'seoul']
 print(sorted(location, reverse = True)) # in reverse order
 print(location) # original list
 
-# sort alphabetically when some values are not in lowercase
+# ALPHABETICAL SORT when some values are not in lowercase
 location = ['tokyo', 'los angeles', 'New York', 'Seoul'] # reassign
 sorted(location, key=str.lower) # disregard lower/uppercase preferences
+# ['los angeles', 'New York', 'Seoul', 'tokyo']
 
+# PERMANENT REVERSE
 # reverse()
 cars.reverse() # reverse only; it does not sort
 print(cars)
@@ -168,7 +210,10 @@ print(cars[0]) # index error
 ```python
 magicians = ['alice', 'david', 'carolina']
 for magician in magicians:
-    print(magician.title() + ", that was a great trick!")
+    print(f"{magician.title()}, that was a great trick!")
+    print(f"I can't wait to see your next trick, {magician.title()}.\n")
+
+print("Thank you, everyone. That was a great magic show!")
 ```
 
 Avoiding Indentation Errors
@@ -177,7 +222,7 @@ Avoiding Indentation Errors
 ## Numerical Lists
 ```python
 for value in range(1, 6):
-    print(value) # 1\n2\n3\n4\n5
+    print(value) # 1 ~ 5
 
 numbers = list(range(1,6)) # [1, 2, 3, 4, 5]
 even_numbers = list(range(2, 11, 2)) # [2, 4, 6, 8, 10]

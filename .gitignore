@@ -2,3 +2,5 @@ out
 .idea
 bin
 venv
+.vscode
+__pycache__

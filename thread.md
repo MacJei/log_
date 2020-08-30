@@ -4,7 +4,7 @@
 
 
 # Concurrency, Parallelism and Related Terms
-자바에서 멀티쓰레드를 적용하기위해 관련 지식 정리
+자바 멀티쓰레드 적용을 위한 관련 내용 정리
 
 [참고링크](https://www.geek-programmer.com/concurrency-parallelism-related-terms/)
 
@@ -40,7 +40,7 @@ Task 또는 실행 인스턴스
 - 싱글코어에서는 여러개의 프로세스가 Sequentially 또는 Concurrently 실행. 동시 실행(parallel computing) 불가능
     Concurrency: 여러프로세스가 번갈아 실행하여 실행 완료. 여러 프로세스가 동시에 실행 되는 것 처럼 보임.
         e.g. 한 사람이 달리기를 하다가, 잠시 멈추고, 벤치프레스를 하다가 멈추고 팔굽혀펴기 운동을 하는 것과 같이 여러가지 일을 처리
-            (단, 달리기, 벤치프레스, 팔굽혀펴기는 서로 동시 실행 불가능)
+            (달리기, 벤치프레스, 팔굽혀펴기 동시 불가능)
     => Task 완료가 느릴 수 있음
 ```
 
@@ -568,6 +568,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  
     public static void main(String[] args){
         startTime = System.currentTimeMillis();
+
+        // queue (대기 중 sub-task들) 사이즈 20에 Runnable 객체인 CountPrime (sub-task)를 나누어 담음
         ConcurrentLinkedQueue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
         int lo = 1;
         int hi = 10000000/20;
@@ -577,14 +579,105 @@ import java.util.concurrent.ConcurrentLinkedQueue;
             queue.add(obj);
             lo = hi;
             hi = hi+10000000/20;
- 
         }
- 
+
+        // 쓰레드 pool 사이즈 8
         ThreadInThePool[] thrdPool = new ThreadInThePool[8];
+        // 쓰레드 pool내의 각 쓰레드 run()을 통해 queue에서 하나씩 poll 하여 sub-task 수행
         for (int i=0;i<8;i++){
             thrdPool[i] = new ThreadInThePool(queue);
             thrdPool[i].start();
         }
     }
  }
+```
+
+
+
+## That’s it. So, now?
+위의 쓰레드 pool을 queue의 sub-task들이 전부 실행 완료 되면 삭제됩니다.
+이미지 프로세싱 소프트웨어의 예를 다시 보면, 이미지 pixel 행들을 실행하기 위해 쓰레드 pool을 생성했고,
+이미지 프로세싱이 끝나면 쓰레드 pool은 종료(삭제) 됩니다.
+
+위의 예제에서, 다른 이미지를 프로세스 하려면, 새로운 쓰레드 pool을 다시 생성 해야 했습니다.
+이러한 쓰레드 pool 생성 및 삭제는 프로세스의 낭비이기 때문에,
+쓰레드 pool의 쓰레드들을 kill 하는 것 보다는, 프로그램 실행 중에 단순히 쓰레드들을 suspend하는 방법이 더 효율적 입니다.
+그러면, 유저가 새로운 이미지를 프로세스에 전달 했을 때 기존과 동일한 쓰레드 pool을 사용 할 수 있음.
+
+```ConcurrentLinkedQueue```를 사용한 예시에서는 'task'들이 쓰레드 풀에 빈자리가 생길때 까지 기다리는데,
+```BlockingQueue``` 자료구조를 이용하여, 'thread'들이 task들이 생길때 까지 기다리도록(suspend) 한다면, 문제 해결 됨.
+
+## Blocking queues are the solution!
+생산자와 소비자 (수요와 공급) 문제와 비슷
+
+- 공급자와 소비자 쓰레드가 있는 ```BlockingQueue```
+![Blocking queue with producer and consumer threads](https://i0.wp.com/www.geek-programmer.com/wp-content/uploads/2017/08/thread1.jpg?resize=768%2C309&ssl=1)
+
+소비자 = 쓰레드 풀의 쓰레드<br>
+생산자 = task를 만드는 쓰레들<br>
+
+Queue에 생성된 task들이 없다면, 쓰레드 풀에 있는 소비자 쓰레드들은 새로운 task가 쓰레드 풀에 추가 될때 까지 기다립니다.
+
+- 소비자 쓰레드가 Block 됨!
+![consumer thread is blocked!](https://i0.wp.com/www.geek-programmer.com/wp-content/uploads/2017/08/Block_consumer_thread.jpg?resize=768%2C306&ssl=1)
+
+그 반대의 경우도 대부분의 어플리케이션에서 필요합니다. 만약 소비하려고 하는 쓰레드가 없다면 생산할 이유도 없습니다.
+다시 말해서, 쓰레드 풀의 소비자 쓰레드가 task를 받을 준비가 되어있지 않으면, 생산 쓰레드도 생산하지 않을 것입니다.
+이것을 구현하기 위해서는, 제한된 크기의 task를 저장할 ```BlockingQueue```를 만들어야 합니다.
+만약 블록킹 queue가 전부 차있다면, 생산 쓰레드는(소비자 쓰레드 아님) 차단 될 것입니다.
+
+- 공급자 쓰레드가 Block 됨!
+![Producer thread is blocked!](https://i1.wp.com/www.geek-programmer.com/wp-content/uploads/2017/08/thread3.jpg?resize=768%2C306&ssl=1)
+
+또한, queue는 동기화(synchronized) 되어야 합니다.
+parallel 프로세싱에서는 하나의 쓰레드만 queue에 접근 가능.
+동기화가 안 되어 있으면, 두개의 쓰레드가 동시에 queue에 접근 하게 되어 race컨디션 발생 : BAD!
+동기화(synchronization)은 이러한 에러를 피하기 위한 장치.
+동기화된 queue는 한번에 하나의 쓰레드만 queue에 접근 허용
+
+이제 동기화된 queue로 두가지의 목표를 달성 해야함 :
+1. queue가 비어있을 때, 소비자 쓰레드를 Block
+2. queue가 꽉찼을때, 생산 쓰레드를 Block
+
+
+## What are the suitable queues then?
+위와 같은 문제를 해하기 위해, 자바 ```java.util.concurrent``` 패키지가 제공하는 2가지의 queue 자료구조를 알아 보겠습니다 : <br>
+```LinkedBlockingQueue``` and ```ArrayBlockingQueue```
+
+해당 자료구조 문법은 다음과 같습니다.
+``` java
+LinkedBlockingQueue<item_type> queue = new LinkedBlockingQueue<item_type>(no_of_items);
+ArrayBlockingQueue<item_type> queue2 = new ArrayBlockingQueue<item_type>(no_of_items);
+```
+
+다음 queue들은 PixelRow라는 객체를 담을 수 있으며, 각각 21개, 10개의 객체를 담을 수 있습니다.
+``` java
+LinkedBlockingQueue<PixelRow> queue = new LinkedBlockingQueue<PixelRow>(21);
+ArrayBlockingQueue<PixelRow> queue2 = new ArrayBlockingQueue<PixelRow>(10);
+```
+
+## But, there’s a difference between them
+위에서 1번 목표만 달성하려면 ```LinkedBlockingQueue```를 사용하면 됩니다.<br>
+즉, 유한개의 사이즈 크기의 queue가 필요없지만,(사이즈 무한 < MAX_SIZE) 소비자 쓰레드를 여전히 Block하고 싶다면,<br>
+```LinkedBlockingQueue```를 생성자에 파라미터 argument 없이 사용 :
+
+``` java
+LinkedBlockingQueue<PixelRow> queue = new LinkedBlockingQueue<PixelRow>();
+```
+
+
+이것은 무한대 사이즈의 queue를 만들것입니다. 물론 (자바에서 정의하는 Integer.MAX_VALUE인 2147483647보다는 작은 값이라 유한개 이긴함)
+
+무한 사이즈```LinkedBlockingQueue```와 무한 사이즈```ConcurrentLinkedQueue```의 차이점은??<br>
+둘다 무한사이즈의 queue이지만, ```ConcurrentLinkedQueue```는 queue가 비어있다면 소비자쓰레드를 Block 하지 않습니다.
+
+## Methods associated with LinkedBlockingQueue and ArrayBlockingQueue
+관련 메소드들
+
+둘다 ```BlockingQueue``` 인터페이스를 상속하며, 해당 인터페이스는 ```put(item)```와 ```take(item)``` 두개의 기본 메소드를 가지고 있습니다.
+주어진 queue가 ```LinkedBlockingQueue``` 또는 ```ArrayBlockingQueue``` 객체라면, 다음 기본적인 메소드가 정의되어 있습니다 :
+``` java
+queue.put(item)
+queue.take(item)
+queue.clear()
 ```
